@@ -28,7 +28,7 @@ library Tick {
         bool upper, // true if updating position's upper tick
         uint128 maxLiquidity
     ) internal returns (bool flipped) {
-        Info memory info = self[tick];
+        Info storage info = self[tick];
 
         uint128 liquidityGrossBefore = info.liquidityGross;
         uint128 liquidityGrossAfter = liquidityDelta < 0

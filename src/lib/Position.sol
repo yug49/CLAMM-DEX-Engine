@@ -14,8 +14,8 @@ library Position {
         uint256 feeGrowthInside1LastX128;
 
         //the fees owed to the position owner in token0/token1
-        uint256 tokensOwed0;
-        uint256 tokensOwed1;
+        uint128 tokensOwed0;
+        uint128 tokensOwed1;
     }
 
     function get(
