@@ -38,6 +38,8 @@ import {SqrtPriceMath} from "./lib/SqrtPriceMath.sol";
 import {SwapMath} from "./lib/SwapMath.sol";
 import {BitMath} from "./lib/BitMath.sol";
 import {TickBitmap} from "./lib/TickBitmap.sol";
+import {FullMath} from "./lib/FullMath.sol";
+import {FixedPoint128} from "./lib/FixedPoint128.sol";
 
 contract CLAMM {
     using SafeCast for int256;
@@ -223,7 +225,7 @@ contract CLAMM {
         bool zeroForOne,
         int256 amountSpecified,
         uint160 sqrtPriceLimitX96,
-        bytes calldata data
+        bytes calldata /* data */
     ) external lock returns (int256 amount0, int256 amount1) {
         if (amountSpecified == 0) revert CLAMM__AmountInvalid();
 
@@ -292,6 +294,9 @@ contract CLAMM {
             }
 
             // TODO update global fee tracker
+            if (state.liquidity > 0) {
+                state.feeGrowthGlobalX128 += FullMath.mulDiv(step.feeAmount, FixedPoint128.Q128, state.liquidity);
+            }
 
             //TODO
             if (state.sqrtPriceX96 == step.sqrtPriceNextX96) {
@@ -359,8 +364,8 @@ contract CLAMM {
         position = positions.get(owner, tickLower, tickUpper);
 
         // Fees Update
-        uint256 _feeGrowthGlobal0X128 = 0;
-        uint256 _feeGrowthGlobal1X128 = 0;
+        uint256 _feeGrowthGlobal0X128 = feeGrowthGlobal0X128;
+        uint256 _feeGrowthGlobal1X128 = feeGrowthGlobal1X128;
 
         bool flippedLower;
         bool flippedUpper;
@@ -392,8 +397,9 @@ contract CLAMM {
             }
         }
 
-        // TODO fees
-        position.update(liquidityDelta, 0, 0);
+        (uint256 feeGrowthInside0X128, uint256 feeGrowthInside1X128) =
+            ticks.getFeeGrowthInside(tickLower, tickUpper, tick, _feeGrowthGlobal0X128, _feeGrowthGlobal1X128);
+        position.update(liquidityDelta, feeGrowthInside0X128, feeGrowthInside1X128);
 
         // clear any tick data that is no longer needed
         if (liquidityDelta < 0) {
