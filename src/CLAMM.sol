@@ -295,25 +295,20 @@ contract CLAMM {
 
             //TODO
             if (state.sqrtPriceX96 == step.sqrtPriceNextX96) {
-                if(step.initialized){
+                if (step.initialized) {
                     int128 liquidityNet = ticks.cross(
                         step.tickNext,
-                        zeroForOne 
-                            ? state.feeGrowthGlobalX128
-                            : feeGrowthGlobal0X128,
-                        zeroForOne
-                            ? feeGrowthGlobal1X128
-                            : state.feeGrowthGlobalX128
+                        zeroForOne ? state.feeGrowthGlobalX128 : feeGrowthGlobal0X128,
+                        zeroForOne ? feeGrowthGlobal1X128 : state.feeGrowthGlobalX128
                     );
 
-                    if(zeroForOne) {
+                    if (zeroForOne) {
                         liquidityNet = -liquidityNet;
                     }
 
                     state.liquidity = liquidity < 0
                         ? state.liquidity - uint128(-liquidityNet)
                         : state.liquidity + uint128(liquidityNet);
-                    
                 }
                 state.tick = zeroForOne ? step.tickNext - 1 : step.tickNext;
             } else if (state.sqrtPriceX96 != step.sqrtPriceStartX96) {
@@ -356,8 +351,6 @@ contract CLAMM {
             }
         }
     }
-
-    
 
     function _updatePostion(address owner, int24 tickUpper, int24 tickLower, int128 liquidityDelta, int24 tick)
         private

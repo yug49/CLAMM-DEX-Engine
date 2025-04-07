@@ -5,9 +5,8 @@ import "./FullMath.sol";
 import "./SqrtPriceMath.sol";
 
 library SwapMath {
-
     /**
-     * 
+     *
      * @param sqrtRatioCurrentX96 sqrt price of the current tick
      * @param sqrtRatioTargetX96 sqrt price of the target tick
      * @param liquidity liquidity of the current tick
@@ -27,113 +26,65 @@ library SwapMath {
         // 1e6 = 100%, 1/100 of a bip
         uint24 feePips // feePips = 1 => 1/100 of a bip
     ) internal pure returns (uint160 sqrtRatioNextX96, uint256 amountIn, uint256 amountOut, uint256 feeAmount) {
-
-        bool zeroForOne = sqrtRatioCurrentX96 >= sqrtRatioTargetX96;  // true if the swap is in the direction of token0 to token1
+        bool zeroForOne = sqrtRatioCurrentX96 >= sqrtRatioTargetX96; // true if the swap is in the direction of token0 to token1
         bool exactIn = amountRemaining > 0; // true if the swap is exact in, false if it is exact out - exact in is when the user specifies the amount of token0/token1 to swap, exact out is when the user specifies the amount of token1/token0 to receive
 
         //Calcute max amountIn or amountOut and next sqrt ratio
-        if(exactIn) {
-            uint amountInRemainingLessFee = FullMath.mulDiv(uint256(amountRemaining), 1e6 - feePips, 1e6);
+        if (exactIn) {
+            uint256 amountInRemainingLessFee = FullMath.mulDiv(uint256(amountRemaining), 1e6 - feePips, 1e6);
 
             // Calculate max amountIn and, round up amountIn
             amountIn = zeroForOne
-                ? SqrtPriceMath.getAmount0Delta(
-                    sqrtRatioTargetX96,
-                    sqrtRatioCurrentX96,
-                    liquidity,
-                    true
-                )
-                : SqrtPriceMath.getAmount1Delta(
-                    sqrtRatioCurrentX96,
-                    sqrtRatioTargetX96,
-                    liquidity,
-                    true
-                );
+                ? SqrtPriceMath.getAmount0Delta(sqrtRatioTargetX96, sqrtRatioCurrentX96, liquidity, true)
+                : SqrtPriceMath.getAmount1Delta(sqrtRatioCurrentX96, sqrtRatioTargetX96, liquidity, true);
 
             // calculate next sqrt ratio
-            if(amountInRemainingLessFee >= amountIn) {
-                sqrtRatioNextX96 = sqrtRatioTargetX96; 
-            }else{
+            if (amountInRemainingLessFee >= amountIn) {
+                sqrtRatioNextX96 = sqrtRatioTargetX96;
+            } else {
                 sqrtRatioNextX96 = SqrtPriceMath.getNextSqrtPriceFromInput(
-                    sqrtRatioCurrentX96,
-                    liquidity,
-                    amountInRemainingLessFee,
-                    zeroForOne
+                    sqrtRatioCurrentX96, liquidity, amountInRemainingLessFee, zeroForOne
                 );
             }
         } else {
             amountOut = zeroForOne
-                ? SqrtPriceMath.getAmount1Delta(
-                    sqrtRatioCurrentX96,
-                    sqrtRatioTargetX96,
-                    liquidity,
-                    false
-                )
-                : SqrtPriceMath.getAmount0Delta(
-                    sqrtRatioTargetX96,
-                    sqrtRatioCurrentX96,
-                    liquidity,
-                    false
-                );
+                ? SqrtPriceMath.getAmount1Delta(sqrtRatioCurrentX96, sqrtRatioTargetX96, liquidity, false)
+                : SqrtPriceMath.getAmount0Delta(sqrtRatioTargetX96, sqrtRatioCurrentX96, liquidity, false);
             // calculate next sqrt ratio
-            if(uint256(-amountRemaining) >= amountOut) {
+            if (uint256(-amountRemaining) >= amountOut) {
                 sqrtRatioNextX96 = sqrtRatioTargetX96;
             } else {
                 sqrtRatioNextX96 = SqrtPriceMath.getNextSqrtPriceFromOutput(
-                    sqrtRatioCurrentX96,
-                    liquidity,
-                    uint256(-amountRemaining),
-                    zeroForOne
+                    sqrtRatioCurrentX96, liquidity, uint256(-amountRemaining), zeroForOne
                 );
             }
         }
 
         // calculate amountIn and amountOut bwteen sqrt current and next
         bool max = sqrtRatioTargetX96 == sqrtRatioNextX96;
-        if(zeroForOne) {
+        if (zeroForOne) {
             amountIn = max && exactIn
                 ? amountIn
-                : SqrtPriceMath.getAmount0Delta(
-                    sqrtRatioNextX96,
-                    sqrtRatioCurrentX96,
-                    liquidity,
-                    true
-                );
+                : SqrtPriceMath.getAmount0Delta(sqrtRatioNextX96, sqrtRatioCurrentX96, liquidity, true);
             amountOut = max && !exactIn
                 ? amountOut
-                : SqrtPriceMath.getAmount1Delta(
-                    sqrtRatioNextX96,
-                    sqrtRatioCurrentX96,
-                    liquidity,
-                    false
-                );
-        }
-        else {
+                : SqrtPriceMath.getAmount1Delta(sqrtRatioNextX96, sqrtRatioCurrentX96, liquidity, false);
+        } else {
             amountIn = max && exactIn
                 ? amountIn
-                : SqrtPriceMath.getAmount1Delta(
-                    sqrtRatioCurrentX96,
-                    sqrtRatioNextX96,
-                    liquidity,
-                    true
-                );
+                : SqrtPriceMath.getAmount1Delta(sqrtRatioCurrentX96, sqrtRatioNextX96, liquidity, true);
             amountOut = max && !exactIn
                 ? amountOut
-                : SqrtPriceMath.getAmount0Delta(
-                    sqrtRatioCurrentX96,
-                    sqrtRatioNextX96,
-                    liquidity,
-                    false
-                );
+                : SqrtPriceMath.getAmount0Delta(sqrtRatioCurrentX96, sqrtRatioNextX96, liquidity, false);
         }
 
         // cap the output amount to not exceed the remaining output amount
-        if(!exactIn && amountOut > uint256(-amountRemaining)) {
+        if (!exactIn && amountOut > uint256(-amountRemaining)) {
             amountOut = uint256(-amountRemaining);
         }
 
         // calculate fee on amountIn
-        if(exactIn && sqrtRatioNextX96 != sqrtRatioTargetX96) {
+        if (exactIn && sqrtRatioNextX96 != sqrtRatioTargetX96) {
             // we didn't reach the targe, so take the remainder of the maximum input as fee
             feeAmount = uint256(amountRemaining) - amountIn;
         } else {
@@ -153,11 +104,7 @@ library SwapMath {
             // fee = x*f = a*f / (1 - f)
 
             // fee = amountIn * f / (1e6 - f)
-            feeAmount = FullMath.mulDivRoundingUp(
-                amountIn,
-                feePips,
-                1e6 - feePips
-            );
+            feeAmount = FullMath.mulDivRoundingUp(amountIn, feePips, 1e6 - feePips);
         }
     }
 }
