@@ -18,6 +18,17 @@ library Tick {
         bool initialize;
     }
 
+    /**
+     * @dev Updats a tick's state whenever liquidity is added or removed
+     * @param self tick mapping
+     * @param tick the tick to update
+     * @param tickCurrent the current tick
+     * @param liquidityDelta the change in liquidity
+     * @param feeGrowthGlobal0X128 the global fee growth for token0
+     * @param feeGrowthGlobal1X128 the global fee growth for token1
+     * @param upper true if updating a position's upper tick
+     * @param maxLiquidity the maximum liquidity allowed per tick
+     */
     function update(
         mapping(int24 => Info) storage self,
         int24 tick,
@@ -25,7 +36,7 @@ library Tick {
         int128 liquidityDelta,
         uint256 feeGrowthGlobal0X128,
         uint256 feeGrowthGlobal1X128,
-        bool upper, // true if updating position's upper tick
+        bool upper, // true if updating a position's upper tick
         uint128 maxLiquidity
     ) internal returns (bool flipped) {
         Info storage info = self[tick];

@@ -21,6 +21,15 @@ library TickBitmap {
         self[wordPos] ^= mask;
     }
 
+    /**
+     * returns the next initialized tick within one word
+     * @param self tick mapping
+     * @param tick the tick to search for
+     * @param tickSpacing the spacing between ticks
+     * @param lte true if searching for less than or equal to
+     * @return next the next initialized tick
+     * @return initialized whether the tick is initialized
+     */
     function nextInitializedTickWithinOneWord(
         mapping(int16 => uint256) storage self,
         int24 tick,
@@ -29,7 +38,10 @@ library TickBitmap {
         bool lte
     ) internal view returns (int24 next, bool initialized) {
         int24 compressed = tick / tickSpacing;
-        // round down to neagative infinity
+        // round down to negative infinity
+        if (tick < 0 && tick % tickSpacing != 0) {
+            compressed--;
+        }
         if (tick < 0 && tick % tickSpacing != 0) {
             compressed--;
         }

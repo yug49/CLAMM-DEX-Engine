@@ -63,17 +63,23 @@ contract CLAMM {
     int24 public immutable i_tickSpacing;
     uint128 public immutable i_maxLiquidityPerTick;
 
+    /**
+     * @notice Slot0 stores current state information
+     */
     struct Slot0 {
-        uint160 sqrtPriceX96;
-        int24 tick;
-        bool unlocked;
+        uint160 sqrtPriceX96; // current sqrt price
+        int24 tick; // current tick index
+        bool unlocked; // a locking flag used as a reentranct guard
     }
 
+    /**
+     * @notice Modifies a PositionParams for a position
+     */
     struct ModifyPositionParams {
-        address owner;
-        int24 tickLower;
-        int24 tickUpper;
-        int128 liquidityDelta;
+        address owner; // the owner of the position
+        int24 tickLower; // the lower tick of the position
+        int24 tickUpper; // the upper tick of the position
+        int128 liquidityDelta; // the amount of liquidity to add or remove
     }
 
     struct SwapCache {
@@ -109,11 +115,11 @@ contract CLAMM {
     mapping(int16 => uint256) public tickBitmap;
     mapping(bytes32 => Position.Info) public positions;
 
-    event Initialize(uint160 indexed sqrtPriceX96, int24 indexed tick);
+    event TickInitialized(uint160 indexed sqrtPriceX96, int24 indexed tick);
 
     modifier lock() {
         if (slot0.unlocked == false) {
-            revert CLAMM__AlreadyInitialized();
+            revert CLAMM__Locked();
         }
         slot0.unlocked = false;
         _;
@@ -136,18 +142,32 @@ contract CLAMM {
         i_maxLiquidityPerTick = Tick.tickSpacingToMaxLiquidityPerTick(_tickSpacing);
     }
 
+    /**
+     * This function sets up the initial price and tick
+     * @param sqrtPriceX96 the sqrtPriceX96 we want to initialize current slot to
+     */
     function initialize(uint160 sqrtPriceX96) external {
-        if (slot0.sqrtPriceX96 == 0) {
-            revert CLAMM__Locked();
+        if (slot0.sqrtPriceX96 != 0) {
+            revert CLAMM__AlreadyInitialized();
         }
 
         int24 tick = TickMath.getTickAtSqrtRatio(sqrtPriceX96);
 
         slot0 = Slot0({sqrtPriceX96: sqrtPriceX96, tick: tick, unlocked: true});
 
-        emit Initialize(sqrtPriceX96, tick);
+        emit TickInitialized(sqrtPriceX96, tick);
     }
 
+    /**
+     * Adds liquidity to the pool
+     * @param recipient person adding the liqudity
+     * @param tickLower lower tick of the range
+     * @param tickUpper upper tick of the range
+     * @param amount amount of liquidity to add
+     * @return amount0 amount of token0 to be sent to the pool
+     * @return amount1 amount of token1 to be sent to the pool
+     * @dev this function will transfer the tokens from the sender to the pool
+     */
     function mint(address recipient, int24 tickLower, int24 tickUpper, uint128 amount)
         external
         lock
@@ -220,6 +240,15 @@ contract CLAMM {
         }
     }
 
+    /**
+     * swaps tokens in the pool
+     * @param recipient recipient of the swap
+     * @param zeroForOne one if the swap is token0 for token1, false if token1 for token0
+     * @param amountSpecified amount of tokens to swap
+     * @param sqrtPriceLimitX96 the sqrt price limit for the swap
+     * @return amount0 amount of token0 received
+     * @return amount1 amount of token1 received
+     */
     function swap(
         address recipient,
         bool zeroForOne,
@@ -255,13 +284,10 @@ contract CLAMM {
         });
 
         // continue swapping as long as there is liquidity and the amount specified is not zero
-        //TODO
         while (state.amountSpecifiedRemaining != 0 && state.sqrtPriceX96 != sqrtPriceLimitX96) {
             StepComputation memory step;
 
             step.sqrtPriceStartX96 = state.sqrtPriceX96;
-
-            // TODO next initialized tick
 
             (step.tickNext, step.initialized) =
                 tickBitmap.nextInitializedTickWithinOneWord(state.tick, i_tickSpacing, zeroForOne);
