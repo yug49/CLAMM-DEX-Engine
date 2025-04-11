@@ -41,7 +41,7 @@ import {TickBitmap} from "./lib/TickBitmap.sol";
 import {FullMath} from "./lib/FullMath.sol";
 import {FixedPoint128} from "./lib/FixedPoint128.sol";
 
-contract CLAMM {
+contract CLAMMPool {
     using SafeCast for int256;
     using SafeCast for uint256;
     using Position for mapping(bytes32 => Position.Info);
@@ -49,13 +49,13 @@ contract CLAMM {
     using Tick for mapping(int24 => Tick.Info);
     using TickBitmap for mapping(int16 => uint256);
 
-    error CLAMM__AlreadyInitialized();
-    error CLAMM__Locked();
-    error CLAMM__AmountInvalid();
-    error CLAMM__tickLowerGreaterThanOrEqualToUpper();
-    error CLAMM__tickLowerLessThanMin();
-    error CLAMM__tickUpperGreaterThanMax();
-    error CLAMM_InvalidSqrtPriceLimit();
+    error CLAMMPool__AlreadyInitialized();
+    error CLAMMPool__Locked();
+    error CLAMMPool__AmountInvalid();
+    error CLAMMPool__tickLowerGreaterThanOrEqualToUpper();
+    error CLAMMPool__tickLowerLessThanMin();
+    error CLAMMPool__tickUpperGreaterThanMax();
+    error CLAMMPool__InvalidSqrtPriceLimit();
 
     address public immutable i_token0;
     address public immutable i_token1;
@@ -119,7 +119,7 @@ contract CLAMM {
 
     modifier lock() {
         if (slot0.unlocked == false) {
-            revert CLAMM__Locked();
+            revert CLAMMPool__Locked();
         }
         slot0.unlocked = false;
         _;
@@ -148,7 +148,7 @@ contract CLAMM {
      */
     function initialize(uint160 sqrtPriceX96) external {
         if (slot0.sqrtPriceX96 != 0) {
-            revert CLAMM__AlreadyInitialized();
+            revert CLAMMPool__AlreadyInitialized();
         }
 
         int24 tick = TickMath.getTickAtSqrtRatio(sqrtPriceX96);
@@ -174,7 +174,7 @@ contract CLAMM {
         returns (uint256 amount0, uint256 amount1)
     {
         // mint logic
-        if (amount <= 0) revert CLAMM__AmountInvalid();
+        if (amount <= 0) revert CLAMMPool__AmountInvalid();
         (, int256 amount0Int, int256 amount1Int) = _modifyPosition(
             ModifyPositionParams({
                 owner: recipient,
@@ -256,17 +256,17 @@ contract CLAMM {
         uint160 sqrtPriceLimitX96,
         bytes calldata /* data */
     ) external lock returns (int256 amount0, int256 amount1) {
-        if (amountSpecified == 0) revert CLAMM__AmountInvalid();
+        if (amountSpecified == 0) revert CLAMMPool__AmountInvalid();
 
         Slot0 memory slot0Start = slot0;
 
         if (zeroForOne) {
             if (sqrtPriceLimitX96 >= slot0Start.sqrtPriceX96 && sqrtPriceLimitX96 <= TickMath.MIN_SQRT_RATIO) {
-                revert CLAMM_InvalidSqrtPriceLimit();
+                revert CLAMMPool__InvalidSqrtPriceLimit();
             }
         } else {
             if (sqrtPriceLimitX96 <= slot0Start.sqrtPriceX96 && sqrtPriceLimitX96 >= TickMath.MAX_SQRT_RATIO) {
-                revert CLAMM_InvalidSqrtPriceLimit();
+                revert CLAMMPool__InvalidSqrtPriceLimit();
             }
         }
 
@@ -483,13 +483,13 @@ contract CLAMM {
 
     function checkTicks(int24 tickLower, int24 tickUpper) private pure {
         if (tickLower >= tickUpper) {
-            revert CLAMM__tickLowerGreaterThanOrEqualToUpper();
+            revert CLAMMPool__tickLowerGreaterThanOrEqualToUpper();
         }
         if (tickLower < TickMath.MIN_TICK) {
-            revert CLAMM__tickLowerLessThanMin();
+            revert CLAMMPool__tickLowerLessThanMin();
         }
         if (tickUpper > TickMath.MAX_TICK) {
-            revert CLAMM__tickUpperGreaterThanMax();
+            revert CLAMMPool__tickUpperGreaterThanMax();
         }
     }
 }
