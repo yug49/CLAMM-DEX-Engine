@@ -50,7 +50,7 @@ contract CLAMMPoolDeployer is Script {
 
         vm.stopBroadcast();
 
-        if (clammPool == address(0)) {
+        if (address(clammPool) == address(0)) {
             revert CLAMMPoolDeployer__PoolNotCreated();
         }
 
