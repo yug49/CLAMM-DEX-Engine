@@ -25,7 +25,7 @@ contract CLAMMPoolDeployer is Script {
         feeToTickSpacing[10000] = 200;
     }
 
-    function run(address tokenA, address tokenB, uint24 fee) public {
+    function run(address tokenA, address tokenB, uint24 fee) public returns (CLAMMPool) {
         if (tokenA == address(0) || tokenB == address(0)) {
             revert CLAMMPoolDeployer__InvalidTokenAddressEntered();
         }
@@ -64,11 +64,14 @@ contract CLAMMPoolDeployer is Script {
         console.log("Token B:", _tokenB);
         console.log("Fee:", fee);
         console.log("Tick Spacing:", feeToTickSpacing[fee]);
+
+        return clammPool;
     }
 
     function setAnotherOwner(address newOwner) public {
         if (msg.sender != owner) {
             revert CLAMMPoolDeployer__NotOwner();
         }
+        owner = newOwner;
     }
 }
