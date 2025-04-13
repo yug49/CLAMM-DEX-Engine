@@ -40,6 +40,26 @@ It is a smart contract project written in [Solidity](https://docs.soliditylang.o
     SEPOLIA_RPC_URL=<YOUR SEPOLIA RPC URL>
     ETHERSCAN_API_KEY=<YOUR ETHERSCAN API KEY>
     SEPOLIA_PRIVATE_KEY=<YOUR PRIVATE KEY>
+
+    # Arguments for Pool Deployment
+    TOKEN_A=<ADDRESS OF TOKEN A>
+    TOKEN_B=<ADDRESS OF TOKEN B>
+    FEE=<FEES IN BASIS POINTS(either 500, 3000 or 10000)>
+    INITIAL_SQRT_PRICE_X96=<INTIAL SQUARE ROOT PRICE X96>
+
+    # Arguments for Position Management
+    LOWER_TICK=-<LOWER TICK>
+    UPPER_TICK=<UPPER TICK> 
+    AMOUNT_TO_ADD=<AMOUNT OF LIQUIDITY TO ADD>
+    AMOUNT_TO_REMOVE=<AMOUNT OF LIQUIDITY TO REMOVE>
+
+    # Arguments for Collection of Fees or Removed/Burned Liquidity
+    AMOUNT0_TO_COLLECT=<AMOUNT OF TOKEN A TO COLLECT>
+    AMOUNT1_TO_COLLECT=<AMOUNT OF TOKEN B TO COLLECT>
+
+    # Arguments for Swap Management
+    SWAP_AMOUNT=<AMOUNT OF TOKENS TO SWAP>
+    SQRT_PRICE_LIMIT_X96=<SQRT PRICE LIMIT X96 WHILE SWAPPING>
 ```
 - Remove pre installed cache, unecessary or partially cloned modules modules etc.
 ```bash

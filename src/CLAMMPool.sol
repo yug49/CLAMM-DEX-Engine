@@ -173,7 +173,6 @@ contract CLAMMPool {
         lock
         returns (uint256 amount0, uint256 amount1)
     {
-        // mint logic
         if (amount <= 0) revert CLAMMPool__AmountInvalid();
         (, int256 amount0Int, int256 amount1Int) = _modifyPosition(
             ModifyPositionParams({

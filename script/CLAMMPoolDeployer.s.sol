@@ -17,7 +17,12 @@ contract CLAMMPoolDeployer is Script {
     mapping(address => mapping(address => mapping(uint24 => address))) public poolForPair;
 
     constructor() {
-        owner = msg.sender;
+        // vm.startBroadcast();
+        // // Set the owner to the address that deploys the contract
+        // owner = msg.sender;
+        // vm.stopBroadcast();
+
+        console.log("owner in contructor", owner);
 
         // Initialize the feeToTickSpacing mapping with values
         feeToTickSpacing[500] = 10;
@@ -25,7 +30,12 @@ contract CLAMMPoolDeployer is Script {
         feeToTickSpacing[10000] = 200;
     }
 
-    function run(address tokenA, address tokenB, uint24 fee, uint160 initialSqrtPriceX96) public returns (CLAMMPool) {
+    function run() public returns (CLAMMPool) {
+        address tokenA = vm.envAddress("TOKEN_A");
+        address tokenB = vm.envAddress("TOKEN_B");
+        uint24 fee = uint24(vm.envUint("FEE"));
+        uint160 initialSqrtPriceX96 = uint160(vm.envUint("INITIAL_SQRT_PRICE_X96"));
+
         if (tokenA == address(0) || tokenB == address(0)) {
             revert CLAMMPoolDeployer__InvalidTokenAddressEntered();
         }
@@ -35,7 +45,9 @@ contract CLAMMPoolDeployer is Script {
         if (feeToTickSpacing[fee] == 0) {
             revert CLAMMPoolDeployer__InvalidFeeEntered();
         }
-        if (msg.sender != owner) {
+        if (owner != address(0) && msg.sender != owner) {
+            console.log("msg.sender", msg.sender);
+            console.log("owner", owner);
             revert CLAMMPoolDeployer__NotOwner();
         }
         return deployCLAMMPoolContract(tokenA, tokenB, fee, initialSqrtPriceX96);
@@ -57,6 +69,7 @@ contract CLAMMPoolDeployer is Script {
         // Deploy the CLAMMPool contract
         CLAMMPool clammPool = new CLAMMPool(_tokenA, _tokenB, fee, feeToTickSpacing[fee]);
         clammPool.initialize(initialSqrtPriceX96);
+        if (owner == address(0)) owner = msg.sender;
 
         vm.stopBroadcast();
 

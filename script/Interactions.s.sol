@@ -11,7 +11,11 @@ import {DevOpsTools} from "../lib/foundry-devops/src/DevOpsTools.sol";
  * Position Management
  */
 contract AddLiquidity is Script {
-    function run(int24 tickLower, int24 tickUpper, uint128 amount) public {
+    function run() public {
+        int24 tickLower = int24(uint24(vm.envUint("LOWER_TICK")));
+        int24 tickUpper = int24(uint24(vm.envUint("UPPER_TICK")));
+        uint128 amount = uint128(vm.envUint("AMOUNT_TO_ADD"));
+
         address recentDeployment = DevOpsTools.get_most_recent_deployment("CLAMMPool", block.chainid);
         CLAMMPool clammPool = CLAMMPool(recentDeployment);
 
@@ -23,7 +27,11 @@ contract AddLiquidity is Script {
 }
 
 contract RemoveLiquidity is Script {
-    function run(int24 tickLower, int24 tickUpper, uint128 amount) public {
+    function run() public {
+        int24 tickLower = int24(uint24(vm.envUint("LOWER_TICK")));
+        int24 tickUpper = int24(uint24(vm.envUint("UPPER_TICK")));
+        uint128 amount = uint128(vm.envUint("AMOUNT_TO_REMOVE"));
+
         address recentDeployment = DevOpsTools.get_most_recent_deployment("CLAMMPool", block.chainid);
         CLAMMPool clammPool = CLAMMPool(recentDeployment);
 
@@ -38,7 +46,12 @@ contract RemoveLiquidity is Script {
  * Collect Fees or Removed/Burned Liquidity
  */
 contract CollectFeesAndRemovedLiquidity is Script {
-    function run(int24 tickLower, int24 tickUpper, uint128 amount0Requested, uint128 amount1Requested) public {
+    function run() public {
+        int24 tickLower = int24(uint24(vm.envUint("LOWER_TICK")));
+        int24 tickUpper = int24(uint24(vm.envUint("UPPER_TICK")));
+        uint128 amount0Requested = uint128(vm.envUint("AMOUNT0_TO_COLLECT"));
+        uint128 amount1Requested = uint128(vm.envUint("AMOUNT1_TO_COLLECT"));
+
         address recentDeployment = DevOpsTools.get_most_recent_deployment("CLAMMPool", block.chainid);
         CLAMMPool clammPool = CLAMMPool(recentDeployment);
 
@@ -53,7 +66,10 @@ contract CollectFeesAndRemovedLiquidity is Script {
  * Swap Management
  */
 contract SwapTokensZeroForOneExactInput is Script {
-    function run(uint256 amount, uint160 sqrtPriceLimitX96) public {
+    function run() public {
+        uint256 amount = uint256(vm.envUint("SWAP_AMOUNT"));
+        uint160 sqrtPriceLimitX96 = uint160(vm.envUint("SQRT_PRICE_LIMIT_X96"));
+
         address recentDeployment = DevOpsTools.get_most_recent_deployment("CLAMMPool", block.chainid);
         CLAMMPool clammPool = CLAMMPool(recentDeployment);
 
@@ -65,7 +81,10 @@ contract SwapTokensZeroForOneExactInput is Script {
 }
 
 contract SwapTokensOneForZeroExactInput is Script {
-    function run(uint256 amount, uint160 sqrtPriceLimitX96) public {
+    function run() public {
+        uint256 amount = uint256(vm.envUint("SWAP_AMOUNT"));
+        uint160 sqrtPriceLimitX96 = uint160(vm.envUint("SQRT_PRICE_LIMIT_X96"));
+
         address recentDeployment = DevOpsTools.get_most_recent_deployment("CLAMMPool", block.chainid);
         CLAMMPool clammPool = CLAMMPool(recentDeployment);
 
@@ -77,7 +96,10 @@ contract SwapTokensOneForZeroExactInput is Script {
 }
 
 contract SwapTokensZeroForOneExactOutput is Script {
-    function run(uint256 amount, uint160 sqrtPriceLimitX96) public {
+    function run() public {
+        uint256 amount = uint256(vm.envUint("SWAP_AMOUNT"));
+        uint160 sqrtPriceLimitX96 = uint160(vm.envUint("SQRT_PRICE_LIMIT_X96"));
+
         address recentDeployment = DevOpsTools.get_most_recent_deployment("CLAMMPool", block.chainid);
         CLAMMPool clammPool = CLAMMPool(recentDeployment);
 
@@ -89,7 +111,10 @@ contract SwapTokensZeroForOneExactOutput is Script {
 }
 
 contract SwapTokensOneForZeroExactOutput is Script {
-    function run(uint256 amount, uint160 sqrtPriceLimitX96) public {
+    function run() public {
+        uint256 amount = uint256(vm.envUint("SWAP_AMOUNT"));
+        uint160 sqrtPriceLimitX96 = uint160(vm.envUint("SQRT_PRICE_LIMIT_X96"));
+
         address recentDeployment = DevOpsTools.get_most_recent_deployment("CLAMMPool", block.chainid);
         CLAMMPool clammPool = CLAMMPool(recentDeployment);
 
