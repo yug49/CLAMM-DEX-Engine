@@ -17,13 +17,6 @@ contract CLAMMPoolDeployer is Script {
     mapping(address => mapping(address => mapping(uint24 => address))) public poolForPair;
 
     constructor() {
-        // vm.startBroadcast();
-        // // Set the owner to the address that deploys the contract
-        // owner = msg.sender;
-        // vm.stopBroadcast();
-
-        console.log("owner in contructor", owner);
-
         // Initialize the feeToTickSpacing mapping with values
         feeToTickSpacing[500] = 10;
         feeToTickSpacing[3000] = 60;
@@ -46,8 +39,6 @@ contract CLAMMPoolDeployer is Script {
             revert CLAMMPoolDeployer__InvalidFeeEntered();
         }
         if (owner != address(0) && msg.sender != owner) {
-            console.log("msg.sender", msg.sender);
-            console.log("owner", owner);
             revert CLAMMPoolDeployer__NotOwner();
         }
         return deployCLAMMPoolContract(tokenA, tokenB, fee, initialSqrtPriceX96);
