@@ -25,17 +25,26 @@ contract CLAMMPoolDeployer is Script {
         feeToTickSpacing[10000] = 200;
     }
 
-    function run(address tokenA, address tokenB, uint24 fee) public returns (CLAMMPool) {
+    function run(address tokenA, address tokenB, uint24 fee, uint160 initialSqrtPriceX96) public returns (CLAMMPool) {
         if (tokenA == address(0) || tokenB == address(0)) {
             revert CLAMMPoolDeployer__InvalidTokenAddressEntered();
         }
         if (tokenA == tokenB) {
             revert CLAMMPoolDeployer__SameTokenAddressesEntered();
         }
-        if (fee != 500 && fee != 3000 && fee != 10000) {
+        if (feeToTickSpacing[fee] == 0) {
             revert CLAMMPoolDeployer__InvalidFeeEntered();
         }
+        if (msg.sender != owner) {
+            revert CLAMMPoolDeployer__NotOwner();
+        }
+        return deployCLAMMPoolContract(tokenA, tokenB, fee, initialSqrtPriceX96);
+    }
 
+    function deployCLAMMPoolContract(address tokenA, address tokenB, uint24 fee, uint160 initialSqrtPriceX96)
+        private
+        returns (CLAMMPool)
+    {
         address _tokenA = tokenA < tokenB ? tokenA : tokenB;
         address _tokenB = tokenA < tokenB ? tokenB : tokenA;
 
@@ -47,6 +56,7 @@ contract CLAMMPoolDeployer is Script {
 
         // Deploy the CLAMMPool contract
         CLAMMPool clammPool = new CLAMMPool(_tokenA, _tokenB, fee, feeToTickSpacing[fee]);
+        clammPool.initialize(initialSqrtPriceX96);
 
         vm.stopBroadcast();
 
