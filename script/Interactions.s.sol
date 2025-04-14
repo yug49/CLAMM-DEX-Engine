@@ -5,7 +5,10 @@ pragma solidity 0.8.19;
 import {Script, console} from "../lib/forge-std/src/Script.sol";
 import {CLAMMPool} from "../src/CLAMMPool.sol";
 import {CLAMMPoolDeployer} from "./CLAMMPoolDeployer.s.sol";
-import {DevOpsTools} from "../lib/foundry-devops/src/DevOpsTools.sol";
+import {IERC20} from "../src/interfaces/IERC20.sol";
+
+// Deployed EURC/USDC pool on sepolia ethereum
+address constant POOL_ADDRESS = 0x5382fEdC620Ae75d977625fee04b0e9a13346bff;
 
 /**
  * Position Management
@@ -15,12 +18,16 @@ contract AddLiquidity is Script {
         int24 tickLower = int24(vm.envInt("LOWER_TICK"));
         int24 tickUpper = int24(vm.envInt("UPPER_TICK"));
         uint128 amount = uint128(vm.envUint("AMOUNT_TO_ADD"));
+        address token0 = vm.envAddress("TOKEN_A");
+        address token1 = vm.envAddress("TOKEN_B");
 
-        address recentDeployment = DevOpsTools.get_most_recent_deployment("CLAMMPool", block.chainid);
-        CLAMMPool clammPool = CLAMMPool(recentDeployment);
+        CLAMMPool clammPool = CLAMMPool(POOL_ADDRESS);
 
         vm.startBroadcast();
         // Add liquidity to the pool
+        IERC20(token0).approve(POOL_ADDRESS, amount);
+        IERC20(token1).approve(POOL_ADDRESS, amount);
+
         clammPool.mint(msg.sender, tickLower, tickUpper, amount);
         vm.stopBroadcast();
     }
@@ -32,8 +39,7 @@ contract RemoveLiquidity is Script {
         int24 tickUpper = int24(vm.envInt("UPPER_TICK"));
         uint128 amount = uint128(vm.envUint("AMOUNT_TO_REMOVE"));
 
-        address recentDeployment = DevOpsTools.get_most_recent_deployment("CLAMMPool", block.chainid);
-        CLAMMPool clammPool = CLAMMPool(recentDeployment);
+        CLAMMPool clammPool = CLAMMPool(POOL_ADDRESS);
 
         vm.startBroadcast();
         // Remove liquidity from the pool
@@ -52,8 +58,7 @@ contract CollectFeesAndRemovedLiquidity is Script {
         uint128 amount0Requested = uint128(vm.envUint("AMOUNT0_TO_COLLECT"));
         uint128 amount1Requested = uint128(vm.envUint("AMOUNT1_TO_COLLECT"));
 
-        address recentDeployment = DevOpsTools.get_most_recent_deployment("CLAMMPool", block.chainid);
-        CLAMMPool clammPool = CLAMMPool(recentDeployment);
+        CLAMMPool clammPool = CLAMMPool(POOL_ADDRESS);
 
         vm.startBroadcast();
         // Collect fees and removed liquidity
@@ -70,8 +75,7 @@ contract SwapTokensZeroForOneExactInput is Script {
         uint256 amount = uint256(vm.envUint("SWAP_AMOUNT"));
         uint160 sqrtPriceLimitX96 = uint160(vm.envUint("SQRT_PRICE_LIMIT_X96"));
 
-        address recentDeployment = DevOpsTools.get_most_recent_deployment("CLAMMPool", block.chainid);
-        CLAMMPool clammPool = CLAMMPool(recentDeployment);
+        CLAMMPool clammPool = CLAMMPool(POOL_ADDRESS);
 
         vm.startBroadcast();
         // Swap tokens in the pool
@@ -85,8 +89,7 @@ contract SwapTokensOneForZeroExactInput is Script {
         uint256 amount = uint256(vm.envUint("SWAP_AMOUNT"));
         uint160 sqrtPriceLimitX96 = uint160(vm.envUint("SQRT_PRICE_LIMIT_X96"));
 
-        address recentDeployment = DevOpsTools.get_most_recent_deployment("CLAMMPool", block.chainid);
-        CLAMMPool clammPool = CLAMMPool(recentDeployment);
+        CLAMMPool clammPool = CLAMMPool(POOL_ADDRESS);
 
         vm.startBroadcast();
         // Swap tokens in the pool
@@ -100,8 +103,7 @@ contract SwapTokensZeroForOneExactOutput is Script {
         uint256 amount = uint256(vm.envUint("SWAP_AMOUNT"));
         uint160 sqrtPriceLimitX96 = uint160(vm.envUint("SQRT_PRICE_LIMIT_X96"));
 
-        address recentDeployment = DevOpsTools.get_most_recent_deployment("CLAMMPool", block.chainid);
-        CLAMMPool clammPool = CLAMMPool(recentDeployment);
+        CLAMMPool clammPool = CLAMMPool(POOL_ADDRESS);
 
         vm.startBroadcast();
         // Swap tokens in the pool
@@ -115,8 +117,7 @@ contract SwapTokensOneForZeroExactOutput is Script {
         uint256 amount = uint256(vm.envUint("SWAP_AMOUNT"));
         uint160 sqrtPriceLimitX96 = uint160(vm.envUint("SQRT_PRICE_LIMIT_X96"));
 
-        address recentDeployment = DevOpsTools.get_most_recent_deployment("CLAMMPool", block.chainid);
-        CLAMMPool clammPool = CLAMMPool(recentDeployment);
+        CLAMMPool clammPool = CLAMMPool(POOL_ADDRESS);
 
         vm.startBroadcast();
         // Swap tokens in the pool

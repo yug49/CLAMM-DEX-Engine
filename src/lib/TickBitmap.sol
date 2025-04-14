@@ -2,6 +2,7 @@
 pragma solidity 0.8.19;
 
 import {BitMath} from "./BitMath.sol";
+import {console} from "../../lib/forge-std/src/console.sol";
 
 library TickBitmap {
     error TickBitmap__TickNotOnTickSpacing();
@@ -13,6 +14,7 @@ library TickBitmap {
 
     function flipTick(mapping(int16 => uint256) storage self, int24 tick, int24 tickSpacing) internal {
         if (tick % tickSpacing != 0) {
+            console.log("tick spacing: ", tickSpacing);
             revert TickBitmap__TickNotOnTickSpacing();
         }
 
