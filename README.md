@@ -63,21 +63,75 @@ It is a smart contract project written in [Solidity](https://docs.soliditylang.o
 ```
 - Remove pre installed cache, unecessary or partially cloned modules modules etc.
 ```bash
-    forge clean
-    rm -rf .gitmodules && rm -rf .git/modules/* && rm -rf lib && touch .gitmodules && git add . && git commit -m "modules"
+    make clean
+    make remove
 
 ```
 
 - Build Project
 ```bash
-    forge build
+    make build
 ```
 ## Formatting
 - to format all the solidity files:
 ```bash
-    forge fmt
+    make format
 ```
 
+## Deployment
+
+### Deploy On a Local Network (Anvil Testnet)
+- To Deploy on a local network first run anvil on your local terminal in current directory by running coommmand: ` make anvil`.
+- Now open another terminal and let this one run in the background
+- Run the following command:
+```bash
+    make deploy
+```
+
+### Deploy on a Sepolia or Any Other Network
+- To Deploy on Sepolia, after successfully creating .env file as mentioned above.
+- Get youself some Sepolia Eth and LINK tokens and then run command:
+```bash
+    make deploy ARGS="--network sepolia"
+```
+
+## Interacting with the deployed contract
+
+- To interact with the deployed smart contract first change the `POOL_ADDRESS` in the `script/Interactions.s.sol` file to the address of your deployed contract.
+- Then you can run following commands for respective interactions:
+
+### Add Liquidity
+```bash
+    make addLiquidity ARGS="--network sepolia"
+```
+
+### Remove Liquidity
+```bash
+    make removeLiquidity ARGS="--network sepolia"
+```
+
+### Collect Fees And Removed Liquidity
+```bash
+    make collectFeesAndRemovedLiquidity ARGS="--network sepolia"
+```
+
+### Swap Tokens
+- To swap from tokenA to tokenB, knowing only the amount of tokenA to swap:
+```bash
+    make swapTokensZeroForOneExactInput ARGS="--network sepolia"
+```
+- To swap from tokenB to tokenA, knowing only the amount of tokenB to swap:
+```bash
+    make swapTokensOneForZeroExactInput ARGS="--network sepolia"
+```
+- To swap from tokenA to tokenB, knowing only the amount of tokenB to swap:
+```bash
+    make swapTokensZeroForOneExactOutput ARGS="--network sepolia"
+```
+- To swap from tokenB to tokenA, knowing only the amount of tokenA to swap:
+```bash
+    make swapTokensOneForZeroExactOutput ARGS="--network sepolia"
+```
 
     
 ## 🔗 Links
